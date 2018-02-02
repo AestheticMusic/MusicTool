@@ -1,0 +1,14 @@
+NoteDataVersion:1
+StartBPM:120
+NormalNote:0:250
+LongNote:0:500:750
+DragNote:0:1000:1
+BatterNote:6:1250:2000
+NormalNote:0:2250
+LongNote:0:2500:3000
+DragNote:0:3000:1
+BatterNote:6:3250:4000
+NormalNote:0:4250
+LongNote:0:4500:5500
+DragNote:0:5000:1
+BatterNote:6:5250:6000
