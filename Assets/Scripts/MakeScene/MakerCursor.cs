@@ -16,9 +16,7 @@ public class MakerCursor : MonoBehaviour
 	private MakeManager g;
 	private NoteManager n;
 	private bool longCursor = false;
-
-
-
+    
 	private void Awake()
 	{
 		cursorRenderer = this.GetComponent<SpriteRenderer>();
@@ -75,7 +73,6 @@ public class MakerCursor : MonoBehaviour
 	public void UpdateLong(float _timeLength, int _lineNum)
 	{
 		float length = n.TimeToMakerLineLength(_timeLength);
-
 		bodyScale.x = (_lineNum == 0 ? -length : length) / noteScale.x;
 		headPos.x = (_lineNum == 0 ? length : -length) / noteScale.x;
 		body.localScale = bodyScale;
