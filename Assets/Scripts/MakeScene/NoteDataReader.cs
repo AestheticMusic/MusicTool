@@ -3,72 +3,116 @@ using UnityEngine;
 
 public class NoteDataReader
 {
-	public bool dataReaded = false;
-	public List<NoteData> datas;
-	public float startBPM = 120f;
-	public float noteSync = 0f;
-	
-	private int dataVersion = 1;
-	
-	public void ReadData(string _ntd)
-	{
-		MakeManager g = MakeManager.instance;
+    public bool dataReaded = false;
+    public List<NoteData> datas;
+    public float startBPM = 120f;
+    public float noteSync = 0f;
 
-		string[] lines = _ntd.Split('\n');
-		datas = new List<NoteData>();
-		NoteData data = null;
-		foreach (string line in lines)
-		{
-			if (string.IsNullOrEmpty(line))
-				break;
+    private int dataVersion = 1;
 
-			string[] words = line.Split(':');
-			switch (words[0])
-			{
-				case "NoteDataVersion":
-					dataVersion = int.Parse(words[1]);
-					break;
-				case "StartBPM":
-					startBPM = float.Parse(words[1]);
-					break;
-				case "NoteSync":
-					noteSync = int.Parse(words[1]) / 1000f;
-					break;
-				case "NormalNote":
-					data = new NoteData();
-					data.lineNum = int.Parse(words[1]);
-					data.time = int.Parse(words[2]) / 1000f;
+    public void ReadData(string _ntd)
+    {
+        MakeManager g = MakeManager.instance;
+
+        string[] lines = _ntd.Split('\n');
+        datas = new List<NoteData>();
+
+        NoteData noteData = null;
+        NoteMusicData musicData = null;
+        NoteCameraData cameraData = null;
+
+        foreach (string line in lines)
+        {
+            if (string.IsNullOrEmpty(line))
+                break;
+
+            string[] words = line.Split(':');
+            switch (words[0])
+            {
+                case "NoteDataVersion":
+                    dataVersion = int.Parse(words[1]);
                     break;
-				case "LongNote":
-					data = new NoteData();
-					data.lineNum = int.Parse(words[1]);
-					data.time = int.Parse(words[2]) / 1000f;
-					data.longEndTime = int.Parse(words[3]) / 1000f;
-					break;
-				case "DragNote":
-					data = new NoteData();
-					data.lineNum = int.Parse(words[1]);
-					data.time = int.Parse(words[2]) / 1000f;
-					data.drag = int.Parse(words[3]);
-					break;
-				case "BatterNote":
-					data = new NoteData();
-					data.batterHit = int.Parse(words[1]);
-                    data.time = int.Parse(words[2]) / 1000f;
-					data.batterEndTime = int.Parse(words[3]) / 1000f;
-					break;
-				default:
-					Debug.LogError("NoteDataReader::Type Unknown : " + words[0]);
-					break;
-			}
+                case "StartBPM":
+                    startBPM = float.Parse(words[1]);
+                    break;
+                case "NoteSync":
+                    noteSync = int.Parse(words[1]) / 1000f;
+                    break;
+                case "NormalNote":
+                    musicData = new NoteMusicData();
+                    musicData.type = NoteType.Music;
+                    musicData.lineNum = int.Parse(words[1]);
+                    musicData.time = int.Parse(words[2]) / 1000f;
+                    noteData = musicData;
+                    break;
+                case "LongNote":
+                    musicData = new NoteMusicData();
+                    musicData.type = NoteType.Music;
+                    musicData.lineNum = int.Parse(words[1]);
+                    musicData.time = int.Parse(words[2]) / 1000f;
+                    musicData.longEndTime = int.Parse(words[3]) / 1000f;
+                    noteData = musicData;
+                    break;
+                case "DragNote":
+                    musicData = new NoteMusicData();
+                    musicData.type = NoteType.Music;
+                    musicData.lineNum = int.Parse(words[1]);
+                    musicData.time = int.Parse(words[2]) / 1000f;
+                    musicData.drag = int.Parse(words[3]);
+                    noteData = musicData;
+                    break;
+                case "BatterNote":
+                    musicData = new NoteMusicData();
+                    musicData.type = NoteType.Music;
+                    musicData.batterHit = int.Parse(words[1]);
+                    musicData.time = int.Parse(words[2]) / 1000f;
+                    musicData.batterEndTime = int.Parse(words[3]) / 1000f;
+                    noteData = musicData;
+                    break;
+                case "POS":
+                    cameraData = new NoteCameraData();
+                    musicData.type = NoteType.Camera;
+                    string[] startPos = words[1].Split(',');
+                    cameraData.startPos = new Vector2(float.Parse(startPos[0]), float.Parse(startPos[1]));
+                    string[] endPos = words[2].Split(',');
+                    cameraData.endPos = new Vector2(float.Parse(endPos[0]), float.Parse(endPos[1]));
+                    cameraData.curvePos = int.Parse(words[3]);
+                    cameraData.time = int.Parse(words[4]) / 1000f;
+                    cameraData.endTime = int.Parse(words[5]) / 1000f;
+                    noteData = cameraData;
+                    break;
+                case "ROT":
+                    cameraData = new NoteCameraData();
+                    musicData.type = NoteType.Camera;
+                    cameraData.startRot = float.Parse(words[1]);
+                    cameraData.endRot = float.Parse(words[2]);
+                    cameraData.curveRot = int.Parse(words[3]);
+                    cameraData.time = int.Parse(words[4]) / 1000f;
+                    cameraData.endTime = int.Parse(words[5]) / 1000f;
+                    noteData = cameraData;
+                    break;
+                case "ZOOM":
+                    cameraData = new NoteCameraData();
+                    musicData.type = NoteType.Camera;
+                    cameraData.startZoom = float.Parse(words[1]);
+                    cameraData.endZoom = float.Parse(words[2]);
+                    cameraData.curveRot = int.Parse(words[3]);
+                    cameraData.time = int.Parse(words[4]) / 1000f;
+                    cameraData.endTime = int.Parse(words[5]) / 1000f;
+                    noteData = cameraData;
+                    break;
+                default:
+                    Debug.LogError("NoteDataReader::Type Unknown : " + words[0]);
+                    break;
+            }
 
-			if (data != null)
-			{
-				datas.Add(data);
-				data = null;
-			}
-		}
+            if (noteData != null)
+            {
+                datas.Add(noteData);
+                noteData = null;
+            }
+        }
 
-		dataReaded = true;
+        dataReaded = true;
     }
 }

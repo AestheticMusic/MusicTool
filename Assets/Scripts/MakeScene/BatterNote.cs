@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BatterNote : Note
+public class BatterNote : NoteMusic
 {
 	public const float appearTime = 0.583f;
 	public const float disappearTime = 0.667f;

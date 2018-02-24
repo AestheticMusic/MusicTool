@@ -22,9 +22,9 @@ public class UIManager : MonoBehaviour
 	public GameObject hotkeyHelp;
 	public GameObject makerControl;
 
-	private MusicManager m;
-	private MakeManager g;
-	private NoteManager n;
+	private MusicManager musicManager;
+	private MakeManager makeManager;
+	private NoteManager noteManager;
 	private bool musicBarIgnoreChange = false;
 	private string[] makerMessages =
 	{
@@ -36,68 +36,69 @@ public class UIManager : MonoBehaviour
 		"Click + Drag :\n연타노트 배치\n\n(연타노트 위에서)\nShift + Click :\n연타횟수 설정",
 	};
 
+    public UIMusicMaker musicMaker;
+    public UICameraMaker camMaker;
 
-
-	private void Awake()
+    private void Awake()
 	{
 		instance = this;
 	}
 
 	private void Start()
 	{
-		g = MakeManager.instance;
-		m = MusicManager.instance;
-		n = NoteManager.instance;
+		makeManager = MakeManager.instance;
+		musicManager = MusicManager.instance;
+		noteManager = NoteManager.instance;
 
 		musicBar.minValue = 0f;
 		OnNoteModeChanged(MakeManager.NMODE_SELECT);
 
-		noteSyncText.text = g.noteSync.ToString();
-		bpmText.text = g.bpm.ToString();
+		noteSyncText.text = makeManager.noteSync.ToString();
+		bpmText.text = makeManager.bpm.ToString();
     }
 
 	private void Update()
 	{
-		if (g.playMode)
+		if (makeManager.playMode)
 		{
-			ChangeMusicBarIgnored(g.time);
+			ChangeMusicBarIgnored(makeManager.time);
         }
-		timeText.text = ((int)g.time / 60).ToString("D02") + ":" + 
-						((int)g.time % 60).ToString("D02");
+		timeText.text = ((int)makeManager.time / 60).ToString("D02") + ":" + 
+						((int)makeManager.time % 60).ToString("D02");
 	}
 
 	public void OnMusicPlay()
 	{
-		if (g.playMode)
+		if (makeManager.playMode)
 			return;
 
-		m.musicTime = g.time;
-		m.Play();
-		g.playMode = true;
-		g.makerCursorEnabled = false;
+		musicManager.musicTime = makeManager.time;
+		musicManager.Play();
+		makeManager.playMode = true;
+		makeManager.makerCursorEnabled = false;
 	}
 
 	public void OnMusicPause()
 	{
-		if (!g.playMode)
+		if (!makeManager.playMode)
 			return;
 
-		m.Pause();
-		g.playMode = false;
-		g.makerCursorEnabled = true;
+		musicManager.Pause();
+		makeManager.playMode = false;
+		makeManager.makerCursorEnabled = true;
 	}
 
 	public void OnMusicStop()
 	{
-		if (!g.playMode)
+		if (!makeManager.playMode)
 			return;
 
-		m.Stop();
-		m.musicTime = 0f;
-		g.time = 0f;
-		g.playMode = false;
+		musicManager.Stop();
+		musicManager.musicTime = 0f;
+		makeManager.time = 0f;
+		makeManager.playMode = false;
 		ChangeMusicBarIgnored(0f);
-		g.makerCursorEnabled = true;
+		makeManager.makerCursorEnabled = true;
 	}
 
 	public void OnMusicBarChanged()
@@ -105,21 +106,21 @@ public class UIManager : MonoBehaviour
 		if (musicBarIgnoreChange)
 			return;
 		
-		m.musicTime = musicBar.value;
-		g.time = musicBar.value;
+		musicManager.musicTime = musicBar.value;
+		makeManager.time = musicBar.value;
 	}
 
 	public void OnPitchBarChanged()
 	{
 		float pitch = pitchBar.value * 0.1f;
-		m.ChangePitch(pitch);
+		musicManager.ChangePitch(pitch);
 		pitchText.text = "Pitch : " + pitch.ToString("F01");
 	}
 
 	public void OnSpeedBarChanged()
 	{
 		float speed = speedBar.value * 0.5f;
-		g.speed = speed;
+		makeManager.speed = speed;
 		speedText.text = "GameSpeed : " + speed.ToString("F01");
 	}
 
@@ -137,74 +138,31 @@ public class UIManager : MonoBehaviour
 
 	public void OnNoteModeChanged(int _mode)
 	{
-		g.noteMode = _mode;
-		g.makerCursor.SetNormalCursor();
+		makeManager.noteMode = _mode;
+		makeManager.makerCursor.SetNormalCursor();
 		makerMessageText.text = makerMessages[_mode + 2];
-        switch (_mode)
-		{
-			case MakeManager.NMODE_NORMAL:
-				g.makerCursor.SetColor(MakerNote.C_NORMAL);
-				break;
-			case MakeManager.NMODE_LONG:
-				g.makerCursor.SetColor(MakerNote.C_LONG);
-				g.makerCursor.SetBodyColor(MakerNoteLong.C_LONG_BODY);
-				break;
-			case MakeManager.NMODE_DRAG:
-				g.makerCursor.SetColor(MakerNote.C_DRAG);
-				break;
-			case MakeManager.NMODE_BATTER:
-				g.makerCursor.SetColor(MakerNote.C_BATTER);
-				g.makerCursor.SetBodyColor(MakerNoteLong.C_BATTER_BODY);
-				break;
-		}
 	}
+
+
 
 	public void OnSaveButton()
 	{
-		n.SaveNoteData();
+		noteManager.SaveNoteData();
 	}
 
 	public void OnGoStartSceneButton()
 	{
-		g.GoStartScene();
+		makeManager.GoStartScene();
 	}
 
 	public void OnNoteSyncChanged(string _sync)
 	{
-		g.noteSync = float.Parse(_sync);
+		makeManager.noteSync = float.Parse(_sync);
 	}
 
 	public void OnBPMChanged(string _bpm)
 	{
-		g.bpm = float.Parse(_bpm);
-	}
-
-	public void OnSetBatterHit()
-	{
-		int hit = int.Parse(batterHitText.text);
-		if (hit < 2 || hit > g.selectedBatter.GetMaxBatterHit())
-		{
-			batterHitDesc.color = Color.red;
-			return;
-		}
-
-		g.selectedBatter.batterHit = hit;
-		CloseBatterHitSet();
-    }
-
-	public void OpenBatterHitSet()
-	{
-		g.hotkeyEnabled = false;
-		batterSetGroup.SetActive(true);
-		batterHitDesc.color = Color.black;
-		batterHitDesc.text = "2 ~ " + g.selectedBatter.GetMaxBatterHit();
-		batterHitText.text = g.selectedBatter.batterHit.ToString();
-	}
-
-	public void CloseBatterHitSet()
-	{
-		g.hotkeyEnabled = true;
-		batterSetGroup.SetActive(false);
+		makeManager.bpm = float.Parse(_bpm);
 	}
 
 	public void OnToggleHotkeyHelp()
@@ -222,34 +180,34 @@ public class UIManager : MonoBehaviour
 		switch (_value)
 		{
 			case 0:
-				g.scrollSpeed = 1f / 1f;
+				makeManager.scrollSpeed = 1f / 1f;
 				break;
 			case 1:
-				g.scrollSpeed = 1f / 2f;
+				makeManager.scrollSpeed = 1f / 2f;
 				break;
 			case 2:
-				g.scrollSpeed = 1f / 3f;
+				makeManager.scrollSpeed = 1f / 3f;
 				break;
 			case 3:
-				g.scrollSpeed = 1f / 4f;
+				makeManager.scrollSpeed = 1f / 4f;
 				break;
 			case 4:
-				g.scrollSpeed = 1f / 6f;
+				makeManager.scrollSpeed = 1f / 6f;
 				break;
 			case 5:
-				g.scrollSpeed = 1f / 8f;
+				makeManager.scrollSpeed = 1f / 8f;
 				break;
 			case 6:
-				g.scrollSpeed = 1f / 12f;
+				makeManager.scrollSpeed = 1f / 12f;
 				break;
 			case 7:
-				g.scrollSpeed = 1f / 16f;
+				makeManager.scrollSpeed = 1f / 16f;
 				break;
 			case 8:
-				g.scrollSpeed = 1f / 24f;
+				makeManager.scrollSpeed = 1f / 24f;
 				break;
 			case 9:
-				g.scrollSpeed = 1f / 32f;
+				makeManager.scrollSpeed = 1f / 32f;
 				break;
 		}
 	}
@@ -259,36 +217,36 @@ public class UIManager : MonoBehaviour
 		switch(_value)
         {
 			case 0:
-				g.beatRate = 1f / 1f;
+				makeManager.beatRate = 1f / 1f;
 			break;
 			case 1:
-				g.beatRate = 1f / 2f;
+				makeManager.beatRate = 1f / 2f;
 			break;
 			case 2:
-				g.beatRate = 1f / 3f;
+				makeManager.beatRate = 1f / 3f;
 			break;
 			case 3:
-				g.beatRate = 1f / 4f;
+				makeManager.beatRate = 1f / 4f;
 			break;
 			case 4:
-				g.beatRate = 1f / 6f;
+				makeManager.beatRate = 1f / 6f;
 			break;
 			case 5:
-				g.beatRate = 1f / 8f;
+				makeManager.beatRate = 1f / 8f;
 			break;
 			case 6:
-				g.beatRate = 1f / 12f;
+				makeManager.beatRate = 1f / 12f;
 			break;
 			case 7:
-				g.beatRate = 1f / 16f;
+				makeManager.beatRate = 1f / 16f;
 			break;
 			case 8:
-				g.beatRate = 1f / 24f;
+				makeManager.beatRate = 1f / 24f;
 			break;
 			case 9:
-				g.beatRate = 1f / 32f;
+				makeManager.beatRate = 1f / 32f;
 			break;
 		}
-		g.ChangeGridSprite(_value);
+		makeManager.ChangeGridSprite(_value);
 	}
 }

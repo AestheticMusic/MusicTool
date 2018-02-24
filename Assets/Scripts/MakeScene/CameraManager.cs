@@ -15,17 +15,14 @@ public class CameraManager : MonoBehaviour
 	private float camZoom;
 	private Vector3 camRot = Vector3.zero;
 	private float screenRatio = 1f;
-	public List<CameraData> datas;
+	public List<NoteCameraData> datas;
 	private MakeManager g;
 
 
 
 	private void Awake()
 	{
-		instance = this;
-		// datas = new List<CameraData>();
-		// System.Windows.Forms.Cursor.Position = new System.Drawing.Point(6, 6);
-		
+		instance = this;		
 	}
 
 	private void Start()
@@ -53,7 +50,7 @@ public class CameraManager : MonoBehaviour
 
 	public void GetCameraInfo(float _time, out Vector3 _pos, out float _zoom, out float _rot)
 	{
-		CameraData data = GetCameraData(_time);
+		NoteCameraData data = GetCameraData(_time);
 		if (data == null)
 		{
 			_pos = Vector3.zero;
@@ -71,12 +68,12 @@ public class CameraManager : MonoBehaviour
 		_pos.z = -10f;
 	}
 
-	private CameraData GetCameraData(float _time)
+	private NoteCameraData GetCameraData(float _time)
 	{
-		CameraData res = null;
+		NoteCameraData res = null;
 		for (int i = 0; i < datas.Count; ++i)
 		{
-			CameraData data = datas[i];
+			NoteCameraData data = datas[i];
 			if (data.time <= _time)
 			{
 				if (res != null && res.time > data.time)

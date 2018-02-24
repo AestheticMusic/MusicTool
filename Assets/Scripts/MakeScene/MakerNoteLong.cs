@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MakerNoteLong : MakerNote
+public class MakerNoteLong : MakerMusicNote
 {
 	public static readonly Color32 C_LONG_BODY = new Color32(184, 78, 54, 255);
 	public static readonly Color32 C_BATTER_BODY = new Color32(208, 132, 132, 255);
@@ -14,7 +14,7 @@ public class MakerNoteLong : MakerNote
 	private SpriteRenderer bodyRenderer;
 	private SpriteRenderer endRenderer;
 	private Color bodyColor;
-	private NoteManager n;
+    protected NoteManager n;
 	private Vector3 bodyScale = Vector3.one;
 	private Vector3 endPos = Vector3.zero;
 	private Vector3 batterStartPos = Vector3.zero;
@@ -36,7 +36,7 @@ public class MakerNoteLong : MakerNote
 		base.Start();
 		notePos.z = -1f;
 		this.transform.localPosition = notePos;
-		if (data.noteType == Note.N_BATTER)
+		if (data.noteType == NoteMusic.N_BATTER)
 			batterStart.gameObject.SetActive(true);
 		else
 			batterStart.gameObject.SetActive(false);
@@ -47,16 +47,16 @@ public class MakerNoteLong : MakerNote
 		base.SetColor(_noteType);
 		switch (_noteType)
 		{
-			case Note.N_LONG:
+			case NoteMusic.N_LONG:
 				bodyRenderer.color = C_LONG_BODY;
 				endRenderer.color = C_LONG;
 				break;
-			case Note.N_BATTER:
+			case NoteMusic.N_BATTER:
 				bodyRenderer.color = C_BATTER_BODY;
 				endRenderer.color = C_BATTER;
 				break;
 		}
-		if (g.selectedData == data)
+		if (musicMake.selectedData == data)
 		{
 			Color c = bodyRenderer.color;
 			c.a = 0.5f;
@@ -73,7 +73,7 @@ public class MakerNoteLong : MakerNote
 		endPos.x = -bodyLength;
 		end.localPosition = endPos;
 
-		if (data.noteType == Note.N_BATTER)
+		if (data.noteType == NoteMusic.N_BATTER)
 		{
 			batterStartPos.x = -n.TimeToMakerLineLength(BatterNote.appearTime) / noteScale.x;
             bodyScale.x = n.TimeToMakerLineLength(_length + BatterNote.disappearTime) / noteScale.x;

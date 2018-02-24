@@ -41,11 +41,25 @@ public class StartManager : MonoBehaviour
 			StartCoroutine(LoadNoteData(noteDataFilePath));
 
 			Destroy(instance.gameObject);
+            return;
 		}
 
-		instance = this;
+        musicFilePath = PlayerPrefs.GetString("SongPath", "");
+        noteDataFilePath = PlayerPrefs.GetString("NotePath", "");
+
+        instance = this;
 		DontDestroyOnLoad(this);
-	}
+
+        if (musicFilePath != "") {
+            StartCoroutine(LoadMusic(musicFilePath));
+        }
+
+        if (noteDataFilePath != "")
+        {
+            StartCoroutine(LoadNoteData(noteDataFilePath));
+        }
+
+    }
 
 	private void Start()
 	{
@@ -62,24 +76,30 @@ public class StartManager : MonoBehaviour
 
 	public void OnSongSelect()
 	{
-		string path = "";
+        string path = "";
 		System.Windows.Forms.OpenFileDialog fileDialog = new System.Windows.Forms.OpenFileDialog();
 		fileDialog.Filter = "Ogg Files(*.ogg)|*.ogg|All(*.*)|*.*";
 		if (fileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
 			path = fileDialog.FileName;
-		StartCoroutine(LoadMusic(path));
+
+
+        PlayerPrefs.SetString("SongPath", path);
+        StartCoroutine(LoadMusic(path));
 	}
 
 	public void OnNoteDataSelect()
 	{
-		string path = "";
-		System.Windows.Forms.OpenFileDialog fileDialog = new System.Windows.Forms.OpenFileDialog();
-		fileDialog.Filter = "Note Datas (*.ntd)|*.ntd|All files (*.*)|*.*";
+        string path = "";
+        System.Windows.Forms.OpenFileDialog fileDialog = new System.Windows.Forms.OpenFileDialog();
+		fileDialog.Filter = "Text Datas (*.txt)|*.txt|Note Datas (*.ntd)|*.ntd|All files (*.*)|*.*";
 		if (fileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
 			path = fileDialog.FileName;
 		else
 			return;
-		StartCoroutine(LoadNoteData(path));
+
+    
+        PlayerPrefs.SetString("NotePath", path);
+        StartCoroutine(LoadNoteData(path));
 	}
 
 	private IEnumerator LoadMusic(string _path)

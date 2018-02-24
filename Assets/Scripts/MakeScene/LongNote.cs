@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class LongNote : Note
+public class LongNote : NoteMusic
 {
 	private const float bodyLength = 0.475f;
 

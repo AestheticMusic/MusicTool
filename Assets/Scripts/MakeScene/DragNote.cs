@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class DragNote : Note
+public class DragNote : NoteMusic
 {
 	public int dir = 1;
 

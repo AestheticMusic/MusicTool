@@ -15,8 +15,8 @@ public class NoteManager : MonoBehaviour
 	private float noteMaxTime = 0f;
 	public List<NoteData> datas;
 	private List<NoteData> targetDatas;
-	private List<Note>[] notePools;
-	private List<MakerNote> makerNotePool;
+	private List<NoteMusic>[] notePools;
+	private List<MakerMusicNote> makerNotePool;
 	private List<MakerNoteLong> makerNoteLongPool;
 	private int[] notePoolHeads;
 	private int makerNotePoolHead = 0;
@@ -56,29 +56,29 @@ public class NoteManager : MonoBehaviour
 		noteMinTime = Mathf.Clamp(g.syncedTime, 0f, m.musicLength);
 		noteMaxTime = Mathf.Clamp(g.syncedTime + MakeManager.maxBeatInLine / g.bpmRatio * 2f, 0f, m.musicLength);
 
-		foreach (NoteData data in datas)
+		foreach (NoteMusicData data in datas)
 		{
 			if (data.time >= noteMinTime &&
-				data.time <= noteMaxTime && data.noteType != Note.N_BATTER)
+				data.time <= noteMaxTime && data.noteType != NoteMusic.N_BATTER)
 				targetDatas.Add(data);
-			else if (data.noteType == Note.N_LONG && 
+			else if (data.noteType == NoteMusic.N_LONG && 
 				data.longEndTime >= noteMinTime && data.time <= noteMaxTime)
 				targetDatas.Add(data);
-			else if (data.noteType == Note.N_BATTER && 
+			else if (data.noteType == NoteMusic.N_BATTER && 
 				data.batterEndTime >= noteMinTime - BatterNote.disappearTime && data.time <= noteMaxTime)
 				targetDatas.Add(data);
 		}
 		
 		Vector3 notePos = new Vector3();
-		foreach (NoteData data in targetDatas)
+		foreach (NoteMusicData data in targetDatas)
 		{
 			float timeDiff = data.time - g.syncedTime;
 			float length = TimeToLineLength(timeDiff);
 
-			Note note = PopNote(data.noteType);
+			NoteMusic note = PopNote(data.noteType);
             notePos.x = length;
 			notePos.z = data.time * 0.1f;
-			if (data.noteType == Note.N_BATTER)
+			if (data.noteType == NoteMusic.N_BATTER)
 			{
 				note.notePos = Vector3.zero;
 				note.transform.parent = g.lines[0].parent;
@@ -91,20 +91,20 @@ public class NoteManager : MonoBehaviour
 			note.data = data;
 			note.Start();
 
-			MakerNote mn = null;
-			if (data.noteType == Note.N_LONG)
+			MakerMusicNote mn = null;
+			if (data.noteType == NoteMusic.N_LONG)
 			{
 				mn = PopMakerNoteLong();
 				((MakerNoteLong)mn).SetLength(data.longEndTime - data.time);
 			}
-			else if (data.noteType == Note.N_BATTER)
+			else if (data.noteType == NoteMusic.N_BATTER)
 			{
 				mn = PopMakerNoteLong();
 				((MakerNoteLong)mn).SetLength(data.batterEndTime - data.time);
 
 				MakerNoteLong mn2 = PopMakerNoteLong();
 				mn2.SetLength(data.batterEndTime - data.time);
-				mn2.SetColor(Note.N_BATTER);
+				mn2.SetColor(NoteMusic.N_BATTER);
 				mn2.notePos.y = TimeToMakerLineLength(timeDiff);
 				mn2.transform.parent = g.makerLines[1 - data.lineNum].transform;
 				mn2.data = data;
@@ -123,24 +123,24 @@ public class NoteManager : MonoBehaviour
 
 	private void InitializePool()
 	{
-		notePools = new List<Note>[maxType];
+		notePools = new List<NoteMusic>[maxType];
 		notePoolHeads = new int[maxType];
 		for (int i = 0; i < maxType; ++i)
 		{
 			notePoolHeads[i] = 0;
-			notePools[i] = new List<Note>();
+			notePools[i] = new List<NoteMusic>();
 			for (int j = 0; j < 5; ++j)
 			{
-				Note note = Instantiate<GameObject>(notePrafabs[i]).GetComponent<Note>();
+				NoteMusic note = Instantiate<GameObject>(notePrafabs[i]).GetComponent<NoteMusic>();
 				note.gameObject.SetActive(false);
 				notePools[i].Add(note);
 			}
 		}
 
-		makerNotePool = new List<MakerNote>();
+		makerNotePool = new List<MakerMusicNote>();
 		for (int i = 0; i < 5; ++i)
 		{
-			MakerNote note = Instantiate<GameObject>(makerNotePrafab).GetComponent<MakerNote>();
+			MakerMusicNote note = Instantiate<GameObject>(makerNotePrafab).GetComponent<MakerMusicNote>();
 			note.gameObject.SetActive(false);
 			makerNotePool.Add(note);
 		}
@@ -154,12 +154,12 @@ public class NoteManager : MonoBehaviour
 		}
 	}
 
-	private Note PopNote(int _type)
+	private NoteMusic PopNote(int _type)
 	{
-		Note note = null;
+		NoteMusic note = null;
 		if (notePools[_type].Count == notePoolHeads[_type])
 		{
-			note = Instantiate<GameObject>(notePrafabs[_type]).GetComponent<Note>();
+			note = Instantiate<GameObject>(notePrafabs[_type]).GetComponent<NoteMusic>();
 			notePools[_type].Add(note);
 		}
 		else
@@ -170,12 +170,12 @@ public class NoteManager : MonoBehaviour
 		return note;
 	}
 
-	private MakerNote PopMakerNote()
+	private MakerMusicNote PopMakerNote()
 	{
-		MakerNote note = null;
+		MakerMusicNote note = null;
 		if (makerNotePool.Count == makerNotePoolHead)
 		{
-			note = Instantiate<GameObject>(makerNotePrafab).GetComponent<MakerNote>();
+			note = Instantiate<GameObject>(makerNotePrafab).GetComponent<MakerMusicNote>();
 			makerNotePool.Add(note);
 		}
 		else
