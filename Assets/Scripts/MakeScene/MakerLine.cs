@@ -60,15 +60,23 @@ public class MakerLine : MonoBehaviour
         page2.spriteRenderer.sprite = _spr;
     }
 
+    [HideInInspector]
+    public Vector2 keyboardMake;
+
     public void MouseOver()
     {
-        if (g.playMode)
-            return;
+        //if (g.playMode)
+        //    return;
 
         if (g.noteMode == MakeManager.NMODE_DELETE || g.noteMode == MakeManager.NMODE_SELECT)
             return;
-        
+
         Vector3 worldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+
+
+        if (keyboardMake != Vector2.zero)
+            worldPos = keyboardMake;
+
         if (worldPos.y > -1f || (lineNumber == 0 && worldPos.x > 0) || (lineNumber == 1 && worldPos.x < 0))
             return;
 
@@ -163,7 +171,7 @@ public class MakerLine : MonoBehaviour
         {
             if (longCameraData == null)
                 return;
-            
+
             g.camMake.selectedData = longCameraData;
 
             switch (g.noteMode)

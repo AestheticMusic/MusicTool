@@ -72,7 +72,6 @@ public class NoteDataReader
                 case "POS":
                     cameraData = new NoteCameraData();
                     cameraData.noteType = NoteCamera.N_POS;
-                    Debug.Log(words[1]);
                     string[] startPos = words[1].Replace("(","").Replace(")", "").Split(',');
                     cameraData.startPos = new Vector2(float.Parse(startPos[0]), float.Parse(startPos[1]));
                     string[] endPos = words[2].Replace("(", "").Replace(")", "").Split(',');
