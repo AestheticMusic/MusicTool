@@ -73,7 +73,7 @@ public class MakerLine : MonoBehaviour
             return;
 
         Vector3 localPos = this.transform.InverseTransformPoint(worldPos);
-        localPos.x = 1.02f;
+        localPos.x = 1.45f;
         localPos.z = 0f;
 
         float cursorScroll = g.syncedScroll + localPos.y / pageHeight;
@@ -100,6 +100,11 @@ public class MakerLine : MonoBehaviour
             g.makerCursor.SetLongCursor(lineNumber);
             g.makerCursor.UpdateLong(g.cursorTime - longMusicData.time, lineNumber);
         }
+        else if (longCameraData != null)
+        {
+            g.makerCursor.SetLongCursor(lineNumber);
+            g.makerCursor.UpdateLong(g.cursorTime - longCameraData.time, lineNumber);
+        }
         else
             g.makerCursor.SetNormalCursor();
     }
@@ -111,7 +116,7 @@ public class MakerLine : MonoBehaviour
         if (g.noteMode == MakeManager.NMODE_DELETE || g.noteMode == MakeManager.NMODE_SELECT)
             return;
 
-        if (g.iscameraNoteMode)
+        if (g.isCameraNoteMode)
         {
             NoteCameraData data = new NoteCameraData();
             data.time = g.cursorTime;
@@ -151,24 +156,35 @@ public class MakerLine : MonoBehaviour
 
     public void MouseUp()
     {
-        if (!(g.noteMode == MusicMakeManager.NMODE_LONG || g.noteMode == MusicMakeManager.NMODE_BATTER))
+        if (!(g.noteMode == MusicMakeManager.NMODE_LONG || g.noteMode == MusicMakeManager.NMODE_BATTER || g.noteMode == CameraMakeManager.NMODE_POS || g.noteMode == CameraMakeManager.NMODE_ROT || g.noteMode == CameraMakeManager.NMODE_ZOOM))
             return;
 
-        if (g.iscameraNoteMode)
+        if (g.isCameraNoteMode)
         {
             if (longCameraData == null)
                 return;
+            
+            g.camMake.selectedData = longCameraData;
+
             switch (g.noteMode)
             {
                 case CameraMakeManager.NMODE_POS:
+                    longCameraData.noteType = NoteCamera.N_POS;
+                    u.camMaker.OpenPos();
+                    break;
                 case CameraMakeManager.NMODE_ROT:
+                    longCameraData.noteType = NoteCamera.N_ROT;
+                    u.camMaker.OpenRot();
+                    break;
                 case CameraMakeManager.NMODE_ZOOM:
-                    longMusicData.longEndTime = Mathf.Clamp(g.cursorTime, longMusicData.time + (0.25f / g.bpmRatio), 999f);
+                    longCameraData.noteType = NoteCamera.N_ZOOM;
+                    u.camMaker.OpenZoom();
                     break;
             }
 
+            longCameraData.endTime = Mathf.Clamp(g.cursorTime, longCameraData.time + (0.25f / g.bpmRatio), 999f);
             n.AddNoteData(longCameraData);
-            g.camMake.historyStack.PushHistory(MakeHistory.A_ADDNOTE, longMusicData);
+            g.camMake.historyStack.PushHistory(MakeHistory.A_ADDNOTE, longCameraData);
 
             longCameraData = null;
         }

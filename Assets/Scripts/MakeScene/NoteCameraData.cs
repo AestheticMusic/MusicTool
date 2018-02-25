@@ -19,7 +19,7 @@ public class NoteCameraData : NoteData
     public float startRot = 0f;
     public float endRot = 0f;
     public int curveRot = 0;
-    
+
     public float endTime = 0f;
 
     public float length
@@ -30,19 +30,11 @@ public class NoteCameraData : NoteData
         }
     }
 
-    public int noteType
-    {
-        get
-        {
-            if ((startPos != Vector2.zero) || (endPos != Vector2.zero))
-                return NoteCamera.N_POS;
-            if ((startRot != 0f) || (endRot != 0f))
-                return NoteCamera.N_ROT;
-            if ((startZoom != 0f) || (endZoom != 0f))
-                return NoteCamera.N_ZOOM;
+    public int noteType;
 
-            return NoteCamera.N_NONE;
-        }
+    public NoteCameraData()
+    {
+        type = NoteType.Camera;
     }
 
     public void Set(NoteCameraData _data)
@@ -72,9 +64,9 @@ public class NoteCameraData : NoteData
             case NoteCamera.N_POS:
                 return "POS:" + startPos + ":" + endPos + ":" + curvePos + ":" + Mathf.Floor(time * 1000f) + ":" + Mathf.Floor(endTime * 1000f);
             case NoteCamera.N_ROT:
-                return "ROT:" + startZoom + ":" + endZoom + ":" + curveZoom + ":" + Mathf.Floor(time * 1000f) + ":" + Mathf.Floor(endTime * 1000f);
+                return "ROT:" + startRot + ":" + endRot + ":" + curveRot + ":" + Mathf.Floor(time * 1000f) + ":" + Mathf.Floor(endTime * 1000f);
             case NoteCamera.N_ZOOM:
-                return "ZOOM:" + startRot + ":" + endRot + ":" + curveRot + ":" + Mathf.Floor(time * 1000f) + ":" + Mathf.Floor(endTime * 1000f);
+                return "ZOOM:" + startZoom + ":" + endZoom + ":" + curveZoom + ":" + Mathf.Floor(time * 1000f) + ":" + Mathf.Floor(endTime * 1000f);
         }
 
         return "";

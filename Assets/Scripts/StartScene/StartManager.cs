@@ -45,7 +45,7 @@ public class StartManager : MonoBehaviour
 		}
 
         musicFilePath = PlayerPrefs.GetString("SongPath", "");
-        noteDataFilePath = PlayerPrefs.GetString("NotePath", "");
+        //noteDataFilePath = PlayerPrefs.GetString("NotePath", "");
 
         instance = this;
 		DontDestroyOnLoad(this);

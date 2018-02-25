@@ -45,22 +45,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!1 &1691809716347192
-GameObject:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  serializedVersion: 5
-  m_Component:
-  - component: {fileID: 4618526411663972}
-  - component: {fileID: 212036360972913086}
-  m_Layer: 0
-  m_Name: BatterStart
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
 --- !u!1 &1920099130677340
 GameObject:
   m_ObjectHideFlags: 0
@@ -70,10 +54,10 @@ GameObject:
   m_Component:
   - component: {fileID: 4358370066121528}
   - component: {fileID: 212617469043033592}
-  - component: {fileID: 114011734818843836}
   - component: {fileID: 61283864470710234}
+  - component: {fileID: 114068467915807604}
   m_Layer: 0
-  m_Name: MakerNoteLong
+  m_Name: MakerCameraZoomNote
   m_TagString: MakerNote
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -91,7 +75,6 @@ Transform:
   m_Children:
   - {fileID: 4435216703975482}
   - {fileID: 4366924594866552}
-  - {fileID: 4618526411663972}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -120,19 +103,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 4358370066121528}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!4 &4618526411663972
-Transform:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1691809716347192}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.68, y: 0.1172, z: 0}
-  m_LocalScale: {x: 1, y: 0.7910888, z: 1}
-  m_Children: []
-  m_Father: {fileID: 4358370066121528}
-  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!61 &61125953025074220
 BoxCollider2D:
@@ -209,7 +179,7 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
---- !u!114 &114011734818843836
+--- !u!114 &114068467915807604
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
@@ -217,63 +187,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 1920099130677340}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2e2c166d5aa2f3d4392bcbbd3b052374, type: 3}
+  m_Script: {fileID: 11500000, guid: 54ace255471b59742a36376f29ac1b5a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  body: {fileID: 4435216703975482}
+  end: {fileID: 4366924594866552}
   notePos: {x: 0, y: 0, z: 0}
   data:
     time: 0
     lineNum: 0
     type: 0
-    longEndTime: 0
-    drag: 0
-    batterEndTime: 0
-    batterHit: 0
-  body: {fileID: 4435216703975482}
-  end: {fileID: 4366924594866552}
-  batterStart: {fileID: 4618526411663972}
---- !u!212 &212036360972913086
-SpriteRenderer:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1691809716347192}
-  m_Enabled: 1
-  m_CastShadows: 0
-  m_ReceiveShadows: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_Materials:
-  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_SelectedEditorRenderState: 0
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: -341757387
-  m_SortingLayer: 1
-  m_SortingOrder: 2
-  m_Sprite: {fileID: 21300000, guid: a3220dcadb5da34439d6d1bf78607faa, type: 3}
-  m_Color: {r: 0.9411765, g: 0.7820069, b: 0.7820069, a: 1}
-  m_FlipX: 0
-  m_FlipY: 0
-  m_DrawMode: 0
-  m_Size: {x: 1, y: 1}
-  m_AdaptiveModeThreshold: 0.5
-  m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
-  m_MaskInteraction: 1
+    startPos: {x: 0, y: 0}
+    endPos: {x: 0, y: 0}
+    curvePos: 0
+    startZoom: 0
+    endZoom: 0
+    curveZoom: 0
+    startRot: 0
+    endRot: 0
+    curveRot: 0
+    endTime: 0
+    noteType: 0
 --- !u!212 &212302670409044132
 SpriteRenderer:
   m_ObjectHideFlags: 1

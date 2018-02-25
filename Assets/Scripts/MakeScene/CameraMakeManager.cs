@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CameraMakeManager : MonoBehaviour {
+public class CameraMakeManager : MonoBehaviour
+{
 
     public static CameraMakeManager instance;
 
@@ -11,11 +12,9 @@ public class CameraMakeManager : MonoBehaviour {
     public const int NMODE_POS = 0;
     public const int NMODE_ROT = 1;
     public const int NMODE_ZOOM = 2;
-    
+
     [HideInInspector]
     public NoteCameraData selectedData = null;
-    [HideInInspector]
-    public NoteCameraData selectedBatter = null;
     [HideInInspector]
     public MakeHistoryStack historyStack;
 
@@ -42,7 +41,8 @@ public class CameraMakeManager : MonoBehaviour {
         instance = this;
     }
 
-    private void Start(){
+    private void Start()
+    {
         historyStack = new MakeHistoryStack();
         historyStack.Initialize();
 
@@ -55,6 +55,9 @@ public class CameraMakeManager : MonoBehaviour {
 
     private void Update()
     {
+        if (!isInput)
+            return;
+
         ModifyMode();
         HotKeyUpdate();
         CursorUpdate();
@@ -63,9 +66,6 @@ public class CameraMakeManager : MonoBehaviour {
 
     private void InputControl()
     {
-        if (!isInput)
-            return;
-
         makerLines[0].MouseOver();
         makerLines[1].MouseOver();
 
@@ -89,7 +89,24 @@ public class CameraMakeManager : MonoBehaviour {
                 }
                 else if (makeManager.noteMode == MakeManager.NMODE_SELECT || makeManager.noteMode == MakeManager.NMODE_DELETE)
                     selectedData = note.data;
-                
+                else if (makeManager.noteMode == NMODE_POS && note.data.noteType == NoteCamera.N_POS
+                    && Input.GetKey(KeyCode.LeftShift))
+                {
+                    selectedData = note.data;
+                    ui.OpenPos();
+                }
+                else if (makeManager.noteMode == NMODE_ROT && note.data.noteType == NoteCamera.N_ROT
+                     && Input.GetKey(KeyCode.LeftShift))
+                {
+                    selectedData = note.data;
+                    ui.OpenRot();
+                }
+                else if (makeManager.noteMode == NMODE_ZOOM && note.data.noteType == NoteCamera.N_ZOOM
+                    && Input.GetKey(KeyCode.LeftShift))
+                {
+                    selectedData = note.data;
+                    ui.OpenZoom();
+                }
             }
             else
             {
@@ -161,7 +178,7 @@ public class CameraMakeManager : MonoBehaviour {
                 ui.OnNoteModeChanged(MakeManager.NMODE_SELECT);
             else if (Input.GetKeyDown(KeyCode.W))
                 ui.OnNoteModeChanged(MakeManager.NMODE_DELETE);
-            else if(Input.GetKeyDown(KeyCode.E))
+            else if (Input.GetKeyDown(KeyCode.E))
                 ui.OnNoteModeChanged(NMODE_POS);
             else if (Input.GetKeyDown(KeyCode.R))
                 ui.OnNoteModeChanged(NMODE_ROT);

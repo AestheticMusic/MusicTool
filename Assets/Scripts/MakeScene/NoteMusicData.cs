@@ -29,7 +29,12 @@ public class NoteMusicData : NoteData
 		}
 	}
 
-	public void Set(NoteMusicData _data)
+    public NoteMusicData()
+    {
+        type = NoteType.Music;
+    }
+
+    public void Set(NoteMusicData _data)
 	{
 		this.time = _data.time;
 		this.lineNum = _data.lineNum;

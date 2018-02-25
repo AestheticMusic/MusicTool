@@ -40,6 +40,7 @@ public class SaveManager : MonoBehaviour
 
 			foreach (NoteData data in _datas)
 			{
+                print(data.GetNoteDataString());
 				streamWriter.WriteLine(data.GetNoteDataString());
 			}
 			

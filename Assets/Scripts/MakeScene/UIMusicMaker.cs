@@ -4,18 +4,13 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class UIMusicMaker : MonoBehaviour {
-    public Slider musicBar;
-    public Text timeText;
-    public Slider pitchBar;
-    public Text pitchText;
-    public Slider speedBar;
-    public Text speedText;
+   
     public Text makerMessageText;
-    public InputField noteSyncText;
-    public InputField bpmText;
+    
     public GameObject batterSetGroup;
     public InputField batterHitText;
     public Text batterHitDesc;
+
     public GameObject hotkeyHelp;
     public GameObject makerControl;
 
@@ -29,8 +24,8 @@ public class UIMusicMaker : MonoBehaviour {
         "Click :\n노트 선택",
         "Click :\n노말노트 배치",
         "Click + Drag :\n롱노트 배치",
-        "Click :\n드래그노트 배치\nShift + Click :\n드래그노트 반전 배치",
-        "Click + Drag :\n연타노트 배치\n\n(연타노트 위에서)\nShift + Click :\n연타횟수 설정",
+        "Click :\n드래그노트 배치\nShift + Click :\n노트 반전 배치",
+        "Click + Drag :\n연타노트 배치\n\n(노트 위에서)\nShift + Click :\n연타횟수 설정",
     };
 
     public UIManager uiManager;

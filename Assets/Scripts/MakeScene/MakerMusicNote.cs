@@ -9,7 +9,7 @@ public class MakerMusicNote : MakerNote
     public static readonly Color32 C_DRAG = new Color32(214, 104, 188, 255);
     public static readonly Color32 C_BATTER = new Color32(249, 143, 143, 255);
 
-    protected static readonly Vector3 noteScale = new Vector3(0.15f, 0.8f, 1f);
+    protected static readonly Vector3 noteScale = new Vector3(0.15f, 0.37f, 1f);
 
     private static readonly Vector3 noteRotation = new Vector3(0f, 0f, -90f);
 
@@ -22,7 +22,6 @@ public class MakerMusicNote : MakerNote
     private SpriteRenderer noteRenderer;
     private Color noteColor;
 
-
     protected virtual void Awake()
     {
         noteRenderer = this.GetComponent<SpriteRenderer>();
@@ -33,7 +32,7 @@ public class MakerMusicNote : MakerNote
 
     public virtual void Start()
     {
-        notePos.x = 1.02f;
+        notePos.x = 1.45f;
         notePos.z = -2f;
         this.transform.localScale = noteScale;
         this.transform.localEulerAngles = noteRotation;

@@ -14,7 +14,7 @@ public class MakerNoteLong : MakerMusicNote
 	private SpriteRenderer bodyRenderer;
 	private SpriteRenderer endRenderer;
 	private Color bodyColor;
-    protected NoteManager n;
+    protected NoteManager noteManager;
 	private Vector3 bodyScale = Vector3.one;
 	private Vector3 endPos = Vector3.zero;
 	private Vector3 batterStartPos = Vector3.zero;
@@ -26,7 +26,7 @@ public class MakerNoteLong : MakerMusicNote
 		base.Awake();
 		bodyRenderer = body.GetComponent<SpriteRenderer>();
 		endRenderer = end.GetComponent<SpriteRenderer>();
-		n = NoteManager.instance;
+		noteManager = NoteManager.instance;
 		bodyScale = body.localScale;
 		batterStartPos = batterStart.localPosition;
 	}
@@ -69,14 +69,14 @@ public class MakerNoteLong : MakerMusicNote
 
 	public void SetLength(float _length)
 	{
-		float bodyLength = n.TimeToMakerLineLength(_length) / noteScale.x;
+		float bodyLength = noteManager.TimeToMakerLineLength(_length) / noteScale.x;
 		endPos.x = -bodyLength;
 		end.localPosition = endPos;
 
 		if (data.noteType == NoteMusic.N_BATTER)
 		{
-			batterStartPos.x = -n.TimeToMakerLineLength(BatterNote.appearTime) / noteScale.x;
-            bodyScale.x = n.TimeToMakerLineLength(_length + BatterNote.disappearTime) / noteScale.x;
+			batterStartPos.x = -noteManager.TimeToMakerLineLength(BatterNote.appearTime) / noteScale.x;
+            bodyScale.x = noteManager.TimeToMakerLineLength(_length + BatterNote.disappearTime) / noteScale.x;
 		}
 		else
 			bodyScale.x = bodyLength;

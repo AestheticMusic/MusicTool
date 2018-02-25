@@ -59,6 +59,9 @@ public class MusicMakeManager : MonoBehaviour
 
     private void Update()
     {
+        if (!isInput)
+            return;
+
         ModifyMode();
         HotKeyUpdate();
         CursorUpdate();
@@ -67,9 +70,6 @@ public class MusicMakeManager : MonoBehaviour
 
     private void InputControl()
     {
-        if (!isInput)
-            return;
-
         makerLines[0].MouseOver();
         makerLines[1].MouseOver();
 

@@ -71,10 +71,11 @@ public class NoteDataReader
                     break;
                 case "POS":
                     cameraData = new NoteCameraData();
-                    musicData.type = NoteType.Camera;
-                    string[] startPos = words[1].Split(',');
+                    cameraData.noteType = NoteCamera.N_POS;
+                    Debug.Log(words[1]);
+                    string[] startPos = words[1].Replace("(","").Replace(")", "").Split(',');
                     cameraData.startPos = new Vector2(float.Parse(startPos[0]), float.Parse(startPos[1]));
-                    string[] endPos = words[2].Split(',');
+                    string[] endPos = words[2].Replace("(", "").Replace(")", "").Split(',');
                     cameraData.endPos = new Vector2(float.Parse(endPos[0]), float.Parse(endPos[1]));
                     cameraData.curvePos = int.Parse(words[3]);
                     cameraData.time = int.Parse(words[4]) / 1000f;
@@ -83,7 +84,7 @@ public class NoteDataReader
                     break;
                 case "ROT":
                     cameraData = new NoteCameraData();
-                    musicData.type = NoteType.Camera;
+                    cameraData.noteType = NoteCamera.N_ROT;
                     cameraData.startRot = float.Parse(words[1]);
                     cameraData.endRot = float.Parse(words[2]);
                     cameraData.curveRot = int.Parse(words[3]);
@@ -93,10 +94,10 @@ public class NoteDataReader
                     break;
                 case "ZOOM":
                     cameraData = new NoteCameraData();
-                    musicData.type = NoteType.Camera;
+                    cameraData.noteType = NoteCamera.N_ZOOM;
                     cameraData.startZoom = float.Parse(words[1]);
                     cameraData.endZoom = float.Parse(words[2]);
-                    cameraData.curveRot = int.Parse(words[3]);
+                    cameraData.curveZoom = int.Parse(words[3]);
                     cameraData.time = int.Parse(words[4]) / 1000f;
                     cameraData.endTime = int.Parse(words[5]) / 1000f;
                     noteData = cameraData;

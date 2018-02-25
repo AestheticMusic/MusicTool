@@ -4,242 +4,390 @@ using UnityEngine;
 
 public class NoteManager : MonoBehaviour
 {
-	public static NoteManager instance;
-	private const int maxType = 4;
+    public static NoteManager instance;
+    private const int maxType = 4;
 
-	public GameObject[] notePrafabs;
-	public GameObject makerNotePrafab;
-	public GameObject makerNoteLongPrafab;
+    public GameObject[] notePrafabs;
+    public GameObject makerNotePrafab;
+    public GameObject makerNoteLongPrafab;
+    public GameObject makerNoteCameraPosPrefab;
+    public GameObject makerNoteCameraRotPrefab;
+    public GameObject makerNoteCameraZoomPrefab;
 
-	private float noteMinTime = 0f;
-	private float noteMaxTime = 0f;
-	public List<NoteData> datas;
-	private List<NoteData> targetDatas;
-	private List<NoteMusic>[] notePools;
-	private List<MakerMusicNote> makerNotePool;
-	private List<MakerNoteLong> makerNoteLongPool;
-	private int[] notePoolHeads;
-	private int makerNotePoolHead = 0;
-	private int makerNoteLongPoolHead = 0;
-	private MakeManager g;
-	private MusicManager m;
-	private SaveManager s;
+    private float noteMinTime = 0f;
+    private float noteMaxTime = 0f;
+    public List<NoteData> datas;
+    private List<NoteData> targetDatas;
+    private List<NoteMusic>[] notePools;
+    private List<MakerMusicNote> makerNotePool;
+    private List<MakerNoteLong> makerNoteLongPool;
+    private List<MakerCameraPosNote> makerCameraPosNotePool;
+    private List<MakerCameraRotNote> makerCameraRotNotePool;
+    private List<MakerCameraZoomNote> makerCameraZoomNotePool;
+    private int[] notePoolHeads;
+    private int makerNotePoolHead = 0;
+    private int makerNoteLongPoolHead = 0;
+    private int makerCameraPosNotePoolHead = 0;
+    private int makerCameraRotNotePoolHead = 0;
+    private int makerCameraZoomNotePoolHead = 0;
 
-
-
-	private void Awake()
-	{
-		instance = this;
-	}
-
-	private void Start()
-	{
-		g = MakeManager.instance;
-		m = MusicManager.instance;
-		s = SaveManager.instance;
-
-		NoteDataReader reader = new NoteDataReader();
-		reader.ReadData(StartManager.instance.noteData);
-
-		g.bpm = reader.startBPM;
-		g.noteSync = reader.noteSync;
-		datas = reader.datas;
-		targetDatas = new List<NoteData>();
-
-		InitializePool();
+    private MakeManager g;
+    private MusicManager m;
+    private SaveManager s;
+    
+    private void Awake()
+    {
+        instance = this;
     }
 
-	private void Update()
-	{
-		targetDatas.Clear();
+    private void Start()
+    {
+        g = MakeManager.instance;
+        m = MusicManager.instance;
+        s = SaveManager.instance;
 
-		noteMinTime = Mathf.Clamp(g.syncedTime, 0f, m.musicLength);
-		noteMaxTime = Mathf.Clamp(g.syncedTime + MakeManager.maxBeatInLine / g.bpmRatio * 2f, 0f, m.musicLength);
+        NoteDataReader reader = new NoteDataReader();
+        reader.ReadData(StartManager.instance.noteData);
 
-		foreach (NoteMusicData data in datas)
-		{
-			if (data.time >= noteMinTime &&
-				data.time <= noteMaxTime && data.noteType != NoteMusic.N_BATTER)
-				targetDatas.Add(data);
-			else if (data.noteType == NoteMusic.N_LONG && 
-				data.longEndTime >= noteMinTime && data.time <= noteMaxTime)
-				targetDatas.Add(data);
-			else if (data.noteType == NoteMusic.N_BATTER && 
-				data.batterEndTime >= noteMinTime - BatterNote.disappearTime && data.time <= noteMaxTime)
-				targetDatas.Add(data);
-		}
-		
-		Vector3 notePos = new Vector3();
-		foreach (NoteMusicData data in targetDatas)
-		{
-			float timeDiff = data.time - g.syncedTime;
-			float length = TimeToLineLength(timeDiff);
+        g.bpm = reader.startBPM;
+        g.noteSync = reader.noteSync;
+        datas = reader.datas;
+        targetDatas = new List<NoteData>();
 
-			NoteMusic note = PopNote(data.noteType);
-            notePos.x = length;
-			notePos.z = data.time * 0.1f;
-			if (data.noteType == NoteMusic.N_BATTER)
-			{
-				note.notePos = Vector3.zero;
-				note.transform.parent = g.lines[0].parent;
-			}
-			else
-			{
-				note.notePos = notePos;
-				note.transform.parent = g.lines[data.lineNum];
-			}
-			note.data = data;
-			note.Start();
-
-			MakerMusicNote mn = null;
-			if (data.noteType == NoteMusic.N_LONG)
-			{
-				mn = PopMakerNoteLong();
-				((MakerNoteLong)mn).SetLength(data.longEndTime - data.time);
-			}
-			else if (data.noteType == NoteMusic.N_BATTER)
-			{
-				mn = PopMakerNoteLong();
-				((MakerNoteLong)mn).SetLength(data.batterEndTime - data.time);
-
-				MakerNoteLong mn2 = PopMakerNoteLong();
-				mn2.SetLength(data.batterEndTime - data.time);
-				mn2.SetColor(NoteMusic.N_BATTER);
-				mn2.notePos.y = TimeToMakerLineLength(timeDiff);
-				mn2.transform.parent = g.makerLines[1 - data.lineNum].transform;
-				mn2.data = data;
-                mn2.Start();
-			}
-			else
-				mn = PopMakerNote();
-			mn.notePos.y = TimeToMakerLineLength(timeDiff);
-			mn.transform.parent = g.makerLines[data.lineNum].transform;
-			mn.data = data;
-			mn.SetColor(data.noteType);
-			mn.Start();
-		}
-		DisableRestNotes();
+        InitializePool();
     }
 
-	private void InitializePool()
-	{
-		notePools = new List<NoteMusic>[maxType];
-		notePoolHeads = new int[maxType];
-		for (int i = 0; i < maxType; ++i)
-		{
-			notePoolHeads[i] = 0;
-			notePools[i] = new List<NoteMusic>();
-			for (int j = 0; j < 5; ++j)
-			{
-				NoteMusic note = Instantiate<GameObject>(notePrafabs[i]).GetComponent<NoteMusic>();
-				note.gameObject.SetActive(false);
-				notePools[i].Add(note);
-			}
-		}
+    private void Update()
+    {
+        targetDatas.Clear();
+        CameraManager.instance.datas.Clear();
+        UpdateNote();
+    }
 
-		makerNotePool = new List<MakerMusicNote>();
-		for (int i = 0; i < 5; ++i)
-		{
-			MakerMusicNote note = Instantiate<GameObject>(makerNotePrafab).GetComponent<MakerMusicNote>();
-			note.gameObject.SetActive(false);
-			makerNotePool.Add(note);
-		}
+    void UpdateNote()
+    {
+        noteMinTime = Mathf.Clamp(g.syncedTime, 0f, m.musicLength);
+        noteMaxTime = Mathf.Clamp(g.syncedTime + MakeManager.maxBeatInLine / g.bpmRatio * 2f, 0f, m.musicLength);
 
-		makerNoteLongPool = new List<MakerNoteLong>();
-		for (int i = 0; i < 5; ++i)
-		{
-			MakerNoteLong note = Instantiate<GameObject>(makerNoteLongPrafab).GetComponent<MakerNoteLong>();
-			note.gameObject.SetActive(false);
-			makerNoteLongPool.Add(note);
-		}
-	}
+        foreach (NoteData data in datas)
+        {
+            if (data.type == NoteType.Music)
+            {
+                NoteMusicData musicData = (NoteMusicData)data;
+                if (musicData.time >= noteMinTime &&
+                    musicData.time <= noteMaxTime && musicData.noteType != NoteMusic.N_BATTER)
+                    targetDatas.Add(musicData);
+                else if (musicData.noteType == NoteMusic.N_LONG &&
+                    musicData.longEndTime >= noteMinTime && musicData.time <= noteMaxTime)
+                    targetDatas.Add(musicData);
+                else if (musicData.noteType == NoteMusic.N_BATTER &&
+                    musicData.batterEndTime >= noteMinTime - BatterNote.disappearTime && musicData.time <= noteMaxTime)
+                    targetDatas.Add(musicData);
+            }
+            else {
+                NoteCameraData cameraData = (NoteCameraData)data;
+                if (cameraData.endTime >= noteMinTime && cameraData.time <= noteMaxTime)
+                {
+                    targetDatas.Add(cameraData);
+                    CameraManager.instance.AddNoteCameraData(cameraData);
+                }
+            }
+        }
 
-	private NoteMusic PopNote(int _type)
-	{
-		NoteMusic note = null;
-		if (notePools[_type].Count == notePoolHeads[_type])
-		{
-			note = Instantiate<GameObject>(notePrafabs[_type]).GetComponent<NoteMusic>();
-			notePools[_type].Add(note);
-		}
-		else
-			note = notePools[_type][notePoolHeads[_type]];
+        Vector3 notePos = new Vector3();
+        foreach (NoteData data in targetDatas)
+        {
+            if (data.type == NoteType.Music)
+            {
+                NoteMusicData musicData = (NoteMusicData)data;
+                float timeDiff = musicData.time - g.syncedTime;
+                float length = TimeToLineLength(timeDiff);
 
-		++notePoolHeads[_type];
-		note.gameObject.SetActive(true);
-		return note;
-	}
+                NoteMusic note = PopMusicNote(musicData.noteType);
+                notePos.x = length;
+                notePos.z = musicData.time * 0.1f;
+                if (musicData.noteType == NoteMusic.N_BATTER)
+                {
+                    note.notePos = Vector3.zero;
+                    note.transform.parent = g.lines[0].parent;
+                }
+                else
+                {
+                    note.notePos = notePos;
+                    note.transform.parent = g.lines[data.lineNum];
+                }
+                note.data = musicData;
+                note.Start();
 
-	private MakerMusicNote PopMakerNote()
-	{
-		MakerMusicNote note = null;
-		if (makerNotePool.Count == makerNotePoolHead)
-		{
-			note = Instantiate<GameObject>(makerNotePrafab).GetComponent<MakerMusicNote>();
-			makerNotePool.Add(note);
-		}
-		else
-			note = makerNotePool[makerNotePoolHead];
-		
-		++makerNotePoolHead;
-		note.gameObject.SetActive(true);
-		return note;
-	}
+                MakerMusicNote mn = null;
+                if (musicData.noteType == NoteMusic.N_LONG)
+                {
+                    mn = PopMakerNoteLong();
+                    ((MakerNoteLong)mn).SetLength(musicData.longEndTime - musicData.time);
+                }
+                else if (musicData.noteType == NoteMusic.N_BATTER)
+                {
+                    mn = PopMakerNoteLong();
+                    ((MakerNoteLong)mn).SetLength(musicData.batterEndTime - musicData.time);
 
-	private MakerNoteLong PopMakerNoteLong()
-	{
-		MakerNoteLong note = null;
-		if (makerNoteLongPool.Count == makerNoteLongPoolHead)
-		{
-			note = Instantiate<GameObject>(makerNoteLongPrafab).GetComponent<MakerNoteLong>();
-			makerNoteLongPool.Add(note);
-		}
-		else
-			note = makerNoteLongPool[makerNoteLongPoolHead];
+                    MakerNoteLong mn2 = PopMakerNoteLong();
+                    mn2.SetLength(musicData.batterEndTime - musicData.time);
+                    mn2.SetColor(NoteMusic.N_BATTER);
+                    mn2.notePos.y = TimeToMakerLineLength(timeDiff);
+                    mn2.transform.parent = g.makerLines[1 - musicData.lineNum].transform;
+                    mn2.data = musicData;
+                    mn2.Start();
+                }
+                else
+                    mn = PopMakerNote();
 
-		++makerNoteLongPoolHead;
-		note.gameObject.SetActive(true);
-		return note;
-	}
+                mn.notePos.y = TimeToMakerLineLength(timeDiff);
+                mn.transform.parent = g.makerLines[musicData.lineNum].transform;
+                mn.data = musicData;
+                mn.SetColor(musicData.noteType);
+                mn.Start();
+            }
+            else {
+                NoteCameraData cameraData = (NoteCameraData)data;
 
-	private void DisableRestNotes()
-	{
-		for (int t = 0; t < maxType; ++t)
-		{
-			for (int i = notePoolHeads[t]; i < notePools[t].Count; ++i)
-				notePools[t][i].gameObject.SetActive(false);
-			notePoolHeads[t] = 0;
-		}
-		for (int i = makerNotePoolHead; i < makerNotePool.Count; ++i)
-			makerNotePool[i].gameObject.SetActive(false);
-		makerNotePoolHead = 0;
-		for (int i = makerNoteLongPoolHead; i < makerNoteLongPool.Count; ++i)
-			makerNoteLongPool[i].gameObject.SetActive(false);
-		makerNoteLongPoolHead = 0;
-	}
+                float timeDiff = cameraData.time - g.syncedTime;
+                float length = TimeToLineLength(timeDiff);
 
-	public float TimeToLineLength(float _time)
-	{
-		return _time * g.bpmRatio * g.speed * -MakeManager.oneBeatToLine;
-	}
+                MakerCameraNote cn = null;
 
-	public float TimeToMakerLineLength(float _time)
-	{
-		return _time * g.bpmRatio * MakeManager.oneBeatToLine;
-	}
+                if (cameraData.noteType == NoteCamera.N_POS)
+                {
+                    cn = PopMakerNoteCameraPos();
+                    cn.SetLength(cameraData.endTime - cameraData.time);
+                }
+                else if (cameraData.noteType == NoteCamera.N_ROT)
+                {
+                    cn = PopMakerNoteCameraRot();
+                    cn.SetLength(cameraData.endTime - cameraData.time);
+                }
+                else if (cameraData.noteType == NoteCamera.N_ZOOM)
+                {
+                    cn = PopMakerNoteCameraZoom();
+                    cn.SetLength(cameraData.endTime - cameraData.time);
+                }
+                
+                cn.notePos.y = TimeToMakerLineLength(timeDiff);
+                cn.transform.parent = g.makerLines[cameraData.lineNum].transform;
+                cn.data = cameraData;
+                cn.SetColor();
+                cn.Start();
+            }
+        }
 
-	public void AddNoteData(NoteData _data)
-	{
-		datas.Add(_data);
-	}
+        DisableRestNotes();
+    }
 
-	public void RemoveNoteData(NoteData _data)
-	{
-		datas.Remove(_data);
-	}
+    private void InitializePool()
+    {
+        notePools = new List<NoteMusic>[maxType];
+        notePoolHeads = new int[maxType];
+        for (int i = 0; i < maxType; ++i)
+        {
+            notePoolHeads[i] = 0;
+            notePools[i] = new List<NoteMusic>();
+            for (int j = 0; j < 5; ++j)
+            {
+                NoteMusic note = Instantiate<GameObject>(notePrafabs[i]).GetComponent<NoteMusic>();
+                note.gameObject.SetActive(false);
+                notePools[i].Add(note);
+            }
+        }
 
-	public void SaveNoteData()
-	{
-		s.SaveNoteData(datas);
-	}
+        makerNotePool = new List<MakerMusicNote>();
+        for (int i = 0; i < 5; ++i)
+        {
+            MakerMusicNote note = Instantiate<GameObject>(makerNotePrafab).GetComponent<MakerMusicNote>();
+            note.gameObject.SetActive(false);
+            makerNotePool.Add(note);
+        }
+
+        makerNoteLongPool = new List<MakerNoteLong>();
+        for (int i = 0; i < 5; ++i)
+        {
+            MakerNoteLong note = Instantiate<GameObject>(makerNoteLongPrafab).GetComponent<MakerNoteLong>();
+            note.gameObject.SetActive(false);
+            makerNoteLongPool.Add(note);
+        }
+
+        makerCameraPosNotePool = new List<MakerCameraPosNote>();
+        for (int i = 0; i < 5; ++i)
+        {
+            MakerCameraPosNote note = Instantiate<GameObject>(makerNoteCameraPosPrefab).GetComponent<MakerCameraPosNote>();
+            note.gameObject.SetActive(false);
+            makerCameraPosNotePool.Add(note);
+        }
+
+        makerCameraRotNotePool = new List<MakerCameraRotNote>();
+        for (int i = 0; i < 5; ++i)
+        {
+            MakerCameraRotNote note = Instantiate<GameObject>(makerNoteCameraRotPrefab).GetComponent<MakerCameraRotNote>();
+            note.gameObject.SetActive(false);
+            makerCameraRotNotePool.Add(note);
+        }
+
+        makerCameraZoomNotePool = new List<MakerCameraZoomNote>();
+        for (int i = 0; i < 5; ++i)
+        {
+            MakerCameraZoomNote note = Instantiate<GameObject>(makerNoteCameraZoomPrefab).GetComponent<MakerCameraZoomNote>();
+            note.gameObject.SetActive(false);
+            makerCameraZoomNotePool.Add(note);
+        }
+    }
+
+    private NoteMusic PopMusicNote(int _type)
+    {
+        NoteMusic note = null;
+        if (notePools[_type].Count == notePoolHeads[_type])
+        {
+            note = Instantiate<GameObject>(notePrafabs[_type]).GetComponent<NoteMusic>();
+            notePools[_type].Add(note);
+        }
+        else
+            note = notePools[_type][notePoolHeads[_type]];
+
+        ++notePoolHeads[_type];
+        note.gameObject.SetActive(true);
+        return note;
+    }
+
+    private MakerMusicNote PopMakerNote()
+    {
+        MakerMusicNote note = null;
+        if (makerNotePool.Count == makerNotePoolHead)
+        {
+            note = Instantiate<GameObject>(makerNotePrafab).GetComponent<MakerMusicNote>();
+            makerNotePool.Add(note);
+        }
+        else
+            note = makerNotePool[makerNotePoolHead];
+
+        ++makerNotePoolHead;
+        note.gameObject.SetActive(true);
+        return note;
+    }
+
+    private MakerNoteLong PopMakerNoteLong()
+    {
+        MakerNoteLong note = null;
+        if (makerNoteLongPool.Count == makerNoteLongPoolHead)
+        {
+            note = Instantiate<GameObject>(makerNoteLongPrafab).GetComponent<MakerNoteLong>();
+            makerNoteLongPool.Add(note);
+        }
+        else
+            note = makerNoteLongPool[makerNoteLongPoolHead];
+
+        ++makerNoteLongPoolHead;
+        note.gameObject.SetActive(true);
+        return note;
+    }
+
+    private MakerCameraPosNote PopMakerNoteCameraPos()
+    {
+        MakerCameraPosNote note = null;
+        if (makerCameraPosNotePool.Count == makerCameraPosNotePoolHead)
+        {
+            note = Instantiate<GameObject>(makerNoteCameraPosPrefab).GetComponent<MakerCameraPosNote>();
+            makerCameraPosNotePool.Add(note);
+        }
+        else
+            note = makerCameraPosNotePool[makerCameraPosNotePoolHead];
+
+        ++makerCameraPosNotePoolHead;
+        note.gameObject.SetActive(true);
+        return note;
+    }
+
+    private MakerCameraRotNote PopMakerNoteCameraRot()
+    {
+        MakerCameraRotNote note = null;
+        if (makerCameraRotNotePool.Count == makerCameraRotNotePoolHead)
+        {
+            note = Instantiate<GameObject>(makerNoteCameraRotPrefab).GetComponent<MakerCameraRotNote>();
+            makerCameraRotNotePool.Add(note);
+        }
+        else
+            note = makerCameraRotNotePool[makerCameraRotNotePoolHead];
+
+        ++makerCameraRotNotePoolHead;
+        note.gameObject.SetActive(true);
+        return note;
+    }
+
+    private MakerCameraZoomNote PopMakerNoteCameraZoom()
+    {
+        MakerCameraZoomNote note = null;
+        if (makerCameraZoomNotePool.Count == makerCameraZoomNotePoolHead)
+        {
+            note = Instantiate<GameObject>(makerNoteCameraZoomPrefab).GetComponent<MakerCameraZoomNote>();
+            makerCameraZoomNotePool.Add(note);
+        }
+        else
+            note = makerCameraZoomNotePool[makerCameraZoomNotePoolHead];
+
+        ++makerCameraZoomNotePoolHead;
+        note.gameObject.SetActive(true);
+        return note;
+    }
+
+    private void DisableRestNotes()
+    {
+        for (int t = 0; t < maxType; ++t)
+        {
+            for (int i = notePoolHeads[t]; i < notePools[t].Count; ++i)
+                notePools[t][i].gameObject.SetActive(false);
+            notePoolHeads[t] = 0;
+        }
+
+        for (int i = makerNotePoolHead; i < makerNotePool.Count; ++i)
+            makerNotePool[i].gameObject.SetActive(false);
+        makerNotePoolHead = 0;
+
+        for (int i = makerNoteLongPoolHead; i < makerNoteLongPool.Count; ++i)
+            makerNoteLongPool[i].gameObject.SetActive(false);
+        makerNoteLongPoolHead = 0;
+
+        for (int i = makerCameraPosNotePoolHead; i < makerCameraPosNotePool.Count; ++i)
+            makerCameraPosNotePool[i].gameObject.SetActive(false);
+        makerCameraPosNotePoolHead = 0;
+
+        for (int i = makerCameraRotNotePoolHead; i < makerCameraRotNotePool.Count; ++i)
+            makerCameraRotNotePool[i].gameObject.SetActive(false);
+        makerCameraRotNotePoolHead = 0;
+
+        for (int i = makerCameraZoomNotePoolHead; i < makerCameraZoomNotePool.Count; ++i)
+            makerCameraZoomNotePool[i].gameObject.SetActive(false);
+        makerCameraZoomNotePoolHead = 0;
+
+    }
+
+    public float TimeToLineLength(float _time)
+    {
+        return _time * g.bpmRatio * g.speed * -MakeManager.oneBeatToLine;
+    }
+
+    public float TimeToMakerLineLength(float _time)
+    {
+        return _time * g.bpmRatio * MakeManager.oneBeatToLine;
+    }
+
+    public void AddNoteData(NoteData _data)
+    {
+        datas.Add(_data);
+    }
+
+    public void RemoveNoteData(NoteData _data)
+    {
+        datas.Remove(_data);
+    }
+
+    public void SaveNoteData()
+    {
+        s.SaveNoteData(datas);
+    }
 }

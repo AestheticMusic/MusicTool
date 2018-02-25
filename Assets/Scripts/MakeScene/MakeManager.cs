@@ -87,7 +87,7 @@ public class MakeManager : MonoBehaviour
     [HideInInspector]
     public CameraMakeManager camMake;
 
-    public bool iscameraNoteMode = false;
+    public bool isCameraNoteMode = false;
 
     private float maxScroll = 100f;
     private float _bpm = 60.0f;
@@ -118,7 +118,7 @@ public class MakeManager : MonoBehaviour
         }
         else
         {
-            if (iscameraNoteMode)
+            if (isCameraNoteMode)
             {
                 camMake.isInput = true;
             }
