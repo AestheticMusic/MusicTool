@@ -59,39 +59,41 @@ public class MusicMakeManager : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Z))
+        if (Input.GetKey(KeyCode.LeftAlt))
         {
-            makerLines[0].keyboardMake = new Vector2(-0.9f, -1.1f);
-            makerLines[0].MouseOver();
-            makerLines[0].MouseDown();
+            if (Input.GetKeyDown(KeyCode.Z))
+            {
+                makerLines[0].keyboardMake = new Vector2(-0.9f, -1.1f);
+                makerLines[0].MouseOver();
+                makerLines[0].MouseDown();
+                return;
+            }
+            else if (Input.GetKeyUp(KeyCode.Z))
+            {
+                makerLines[0].MouseUp();
+                makerLines[0].keyboardMake = Vector2.zero;
+                return;
+            }
 
-            return;
+            if (Input.GetKeyDown(KeyCode.C))
+            {
+                makerLines[1].keyboardMake = new Vector2(0.8f, -1.2f);
+                makerLines[1].MouseOver();
+                makerLines[1].MouseDown();
+                return;
+            }
+            else if (Input.GetKeyUp(KeyCode.C))
+            {
+                makerLines[1].MouseUp();
+                makerLines[1].keyboardMake = Vector2.zero;
+                return;
+            }
         }
-        else if (Input.GetKeyUp(KeyCode.Z))
-        {
-            makerLines[0].MouseUp();
+        else {
             makerLines[0].keyboardMake = Vector2.zero;
-            return;
-        }
-
-        if (Input.GetKeyDown(KeyCode.C))
-        {
-            makerLines[1].keyboardMake = new Vector2(0.8f, -1.2f);
-            makerLines[1].MouseOver();
-            makerLines[1].MouseDown();
-
-            return;
-        }
-        else if (Input.GetKeyUp(KeyCode.C))
-        {
-            makerLines[1].MouseUp();
             makerLines[1].keyboardMake = Vector2.zero;
-            return;
         }
-
-        if (!isInput)
-            return;
-
+       
         ModifyMode();
         HotKeyUpdate();
         CursorUpdate();
