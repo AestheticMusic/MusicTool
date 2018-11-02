@@ -5,6 +5,7 @@ using UnityEngine.SceneManagement;
 
 public class StartManager : MonoBehaviour
 {
+
 	public static StartManager instance;
 
 	[HideInInspector]
@@ -50,34 +51,33 @@ public class StartManager : MonoBehaviour
         instance = this;
 		DontDestroyOnLoad(this);
 
-        if (musicFilePath != "") {
+        if (musicFilePath != "")
+        {
             StartCoroutine(LoadMusic(musicFilePath));
+        }
+        else {
+            musicPathText.text = musicFilePath;
         }
 
         if (noteDataFilePath != "")
         {
             StartCoroutine(LoadNoteData(noteDataFilePath));
         }
+        else {
+            noteDataPathText.text = noteDataFilePath;
+        }
 
     }
 
-	private void Start()
-	{
-
-	}
-
 	private void Update()
 	{
-		musicPathText.text = musicFilePath;
-		noteDataPathText.text = noteDataFilePath;
-
 		goMakeSceneBtn.interactable = musicLoaded;
 	}
 
 	public void OnSongSelect()
 	{
         string path = "";
-		System.Windows.Forms.OpenFileDialog fileDialog = new System.Windows.Forms.OpenFileDialog();
+        System.Windows.Forms.OpenFileDialog fileDialog = new System.Windows.Forms.OpenFileDialog();
 		fileDialog.Filter = "Ogg Files(*.ogg)|*.ogg|All(*.*)|*.*";
 		if (fileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
 			path = fileDialog.FileName;
@@ -112,7 +112,8 @@ public class StartManager : MonoBehaviour
 		{
 			music = load;
 			musicFilePath = _path;
-			musicLoaded = true;
+            musicPathText.text = musicFilePath;
+            musicLoaded = true;
 		}
 		else
 		{
@@ -133,7 +134,8 @@ public class StartManager : MonoBehaviour
 			noteData = www.text;
 			noteDataFilePath = _path;
 			noteDataLoaded = true;
-		}
+            noteDataPathText.text = noteDataFilePath;
+        }
 		else
 		{
 			noteData = null;
